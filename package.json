@@ -4,9 +4,11 @@
   "version": "0.1.0",
   "description": "Nuvora multi-vendor marketplace (modular monolith: Next.js web + NestJS API + PostgreSQL)",
   "workspaces": ["apps/*", "packages/*"],
-  "engines": { "node": ">=22" },
+  "engines": { "node": ">=20" },
   "scripts": {
     "build:shared": "npm run build -w @nuvora/shared",
+    "build:web": "npm run build:shared && npm run build -w @nuvora/web",
+    "vercel-build": "npm run build:shared && npm run build -w @nuvora/web",
     "build": "npm run build:shared && npm run build -w @nuvora/api && npm run build -w @nuvora/web",
     "test": "npm run build:shared && npm run test -w @nuvora/shared && npm run test -w @nuvora/api",
     "db:generate": "npm run db:generate -w @nuvora/api",

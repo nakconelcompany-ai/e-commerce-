@@ -4,6 +4,7 @@ import React, { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { ProductCard } from '@/components/ProductCard';
 import { Search, Filter, ArrowUpDown } from 'lucide-react';
+import { API_BASE_URL } from '@/lib/config';
 
 function ProductCatalogContent() {
   const searchParams = useSearchParams();
@@ -23,7 +24,7 @@ function ProductCatalogContent() {
     if (categoryId) params.set('categoryId', categoryId);
     if (sort) params.set('sort', sort);
 
-    fetch(`http://localhost:4000/api/v1/products?${params.toString()}`)
+    fetch(`${API_BASE_URL}/api/v1/products?${params.toString()}`)
       .then((res) => res.json())
       .then((data) => {
         if (data && data.items) {

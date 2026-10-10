@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { formatMoney } from '@nuvora/shared';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
+import { API_BASE_URL } from '@/lib/config';
 import {
   ShoppingBag,
   ShieldCheck,
@@ -38,7 +39,7 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
   const [submittingReview, setSubmittingReview] = useState(false);
 
   useEffect(() => {
-    fetch(`http://localhost:4000/api/v1/products/${params.slug}`)
+    fetch(`${API_BASE_URL}/api/v1/products/${params.slug}`)
       .then((res) => res.json())
       .then((data) => {
         if (data && data.id) {
@@ -54,7 +55,7 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
   }, [params.slug]);
 
   const fetchReviews = (productId: string) => {
-    fetch(`http://localhost:4000/api/v1/reviews/product/${productId}`)
+    fetch(`${API_BASE_URL}/api/v1/reviews/product/${productId}`)
       .then((res) => res.json())
       .then((data) => {
         if (Array.isArray(data)) setReviews(data);
@@ -70,7 +71,7 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
     }
     setSubmittingReview(true);
     try {
-      const res = await fetch('http://localhost:4000/api/v1/reviews', {
+      const res = await fetch(`${API_BASE_URL}/api/v1/reviews`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

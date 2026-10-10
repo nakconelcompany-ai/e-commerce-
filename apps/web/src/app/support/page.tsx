@@ -15,6 +15,7 @@ import {
   ChevronRight,
   RefreshCw,
 } from 'lucide-react';
+import { API_BASE_URL } from '@/lib/config';
 
 export default function CustomerSupportPage() {
   const { user, token } = useAuth();
@@ -45,10 +46,10 @@ export default function CustomerSupportPage() {
 
     setLoading(true);
     Promise.all([
-      fetch('http://localhost:4000/api/v1/support/my-tickets', {
+      fetch(`${API_BASE_URL}/api/v1/support/my-tickets`, {
         headers: { Authorization: `Bearer ${token}` },
       }),
-      fetch('http://localhost:4000/api/v1/orders/my-orders', {
+      fetch(`${API_BASE_URL}/api/v1/orders/my-orders`, {
         headers: { Authorization: `Bearer ${token}` },
       }),
     ])
@@ -80,7 +81,7 @@ export default function CustomerSupportPage() {
 
     setSubmittingTicket(true);
     try {
-      const res = await fetch('http://localhost:4000/api/v1/support/tickets', {
+      const res = await fetch(`${API_BASE_URL}/api/v1/support/tickets`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -117,7 +118,7 @@ export default function CustomerSupportPage() {
 
     setSendingReply(true);
     try {
-      const res = await fetch(`http://localhost:4000/api/v1/support/tickets/${activeTicket.id}/messages`, {
+      const res = await fetch(`${API_BASE_URL}/api/v1/support/tickets/${activeTicket.id}/messages`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -6,6 +6,7 @@ import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
 import { formatMoney } from '@nuvora/shared';
 import { ShieldCheck, CreditCard, Lock, MapPin, Truck } from 'lucide-react';
+import { API_BASE_URL } from '@/lib/config';
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -44,7 +45,7 @@ export default function CheckoutPage() {
 
     try {
       // 1. Create Order via NestJS API
-      const orderRes = await fetch('http://localhost:4000/api/v1/orders', {
+      const orderRes = await fetch(`${API_BASE_URL}/api/v1/orders`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -62,7 +63,7 @@ export default function CheckoutPage() {
       }
 
       // 2. Initialize Paystack Online Payment
-      const payRes = await fetch('http://localhost:4000/api/v1/payments/initialize', {
+      const payRes = await fetch(`${API_BASE_URL}/api/v1/payments/initialize`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

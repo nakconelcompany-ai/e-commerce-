@@ -4,6 +4,7 @@ import React, { useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { CheckCircle2, XCircle, ArrowRight } from 'lucide-react';
+import { API_BASE_URL } from '@/lib/config';
 
 function CallbackContent() {
   const searchParams = useSearchParams();
@@ -21,7 +22,7 @@ function CallbackContent() {
       return;
     }
 
-    fetch(`http://localhost:4000/api/v1/payments/verify/${reference}`)
+    fetch(`${API_BASE_URL}/api/v1/payments/verify/${reference}`)
       .then((res) => res.json())
       .then((data) => {
         if (data && data.status === 'success') {

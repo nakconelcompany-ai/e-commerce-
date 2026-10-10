@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useCart } from '@/context/CartContext';
+import { API_BASE_URL } from '@/lib/config';
 
 export const Header = () => {
   const router = useRouter();
@@ -36,7 +37,7 @@ export const Header = () => {
 
   const fetchNotifications = () => {
     if (!token) return;
-    fetch('http://localhost:4000/api/v1/notifications/my-notifications', {
+    fetch(`${API_BASE_URL}/api/v1/notifications/my-notifications`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => res.json())
@@ -58,7 +59,7 @@ export const Header = () => {
   const handleMarkAsRead = async (id: string) => {
     if (!token) return;
     try {
-      await fetch(`http://localhost:4000/api/v1/notifications/${id}/read`, {
+      await fetch(`${API_BASE_URL}/api/v1/notifications/${id}/read`, {
         method: 'PUT',
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -69,7 +70,7 @@ export const Header = () => {
   const handleMarkAllRead = async () => {
     if (!token) return;
     try {
-      await fetch('http://localhost:4000/api/v1/notifications/read-all', {
+      await fetch(`${API_BASE_URL}/api/v1/notifications/read-all`, {
         method: 'PUT',
         headers: { Authorization: `Bearer ${token}` },
       });

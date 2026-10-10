@@ -5,6 +5,7 @@ import { useAuth } from '@/context/AuthContext';
 import { formatMoney } from '@nuvora/shared';
 import { Package, User, LogOut, CheckCircle, Clock, Truck, ShieldCheck, LifeBuoy } from 'lucide-react';
 import Link from 'next/link';
+import { API_BASE_URL } from '@/lib/config';
 
 export default function AccountPage() {
   const { user, token, login, logout } = useAuth();
@@ -20,7 +21,7 @@ export default function AccountPage() {
 
   useEffect(() => {
     if (token) {
-      fetch('http://localhost:4000/api/v1/orders/my-orders', {
+      fetch(`${API_BASE_URL}/api/v1/orders/my-orders`, {
         headers: { Authorization: `Bearer ${token}` },
       })
         .then((res) => res.json())
@@ -43,7 +44,7 @@ export default function AccountPage() {
     }
 
     try {
-      const res = await fetch(`http://localhost:4000/api/v1/auth/${endpoint}`, {
+      const res = await fetch(`${API_BASE_URL}/api/v1/auth/${endpoint}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),

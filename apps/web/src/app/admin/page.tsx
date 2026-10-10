@@ -21,6 +21,7 @@ import {
   AlertCircle,
   ExternalLink,
 } from 'lucide-react';
+import { API_BASE_URL } from '@/lib/config';
 
 export default function AdminDashboardPage() {
   const { user, token } = useAuth();
@@ -53,12 +54,12 @@ export default function AdminDashboardPage() {
     setLoading(true);
 
     Promise.all([
-      fetch('http://localhost:4000/api/v1/admin/overview', { headers: { Authorization: `Bearer ${token}` } }),
-      fetch('http://localhost:4000/api/v1/admin/sellers', { headers: { Authorization: `Bearer ${token}` } }),
-      fetch('http://localhost:4000/api/v1/admin/verification-docs', { headers: { Authorization: `Bearer ${token}` } }),
-      fetch('http://localhost:4000/api/v1/support/all-tickets', { headers: { Authorization: `Bearer ${token}` } }),
-      fetch('http://localhost:4000/api/v1/payouts/all-payouts', { headers: { Authorization: `Bearer ${token}` } }),
-      fetch('http://localhost:4000/api/v1/coupons', { headers: { Authorization: `Bearer ${token}` } }),
+      fetch(`${API_BASE_URL}/api/v1/admin/overview`, { headers: { Authorization: `Bearer ${token}` } }),
+      fetch(`${API_BASE_URL}/api/v1/admin/sellers`, { headers: { Authorization: `Bearer ${token}` } }),
+      fetch(`${API_BASE_URL}/api/v1/admin/verification-docs`, { headers: { Authorization: `Bearer ${token}` } }),
+      fetch(`${API_BASE_URL}/api/v1/support/all-tickets`, { headers: { Authorization: `Bearer ${token}` } }),
+      fetch(`${API_BASE_URL}/api/v1/payouts/all-payouts`, { headers: { Authorization: `Bearer ${token}` } }),
+      fetch(`${API_BASE_URL}/api/v1/coupons`, { headers: { Authorization: `Bearer ${token}` } }),
     ])
       .then(async ([mRes, sRes, kRes, supRes, pRes, cRes]) => {
         if (mRes.ok) setMetrics(await mRes.json());
@@ -85,7 +86,7 @@ export default function AdminDashboardPage() {
 
   const handleReviewSeller = async (sellerId: string, status: 'APPROVED' | 'REJECTED') => {
     try {
-      const res = await fetch(`http://localhost:4000/api/v1/admin/sellers/${sellerId}/review`, {
+      const res = await fetch(`${API_BASE_URL}/api/v1/admin/sellers/${sellerId}/review`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -104,7 +105,7 @@ export default function AdminDashboardPage() {
 
   const handleReviewKycDoc = async (docId: string, status: 'VERIFIED' | 'REJECTED') => {
     try {
-      const res = await fetch(`http://localhost:4000/api/v1/admin/verification-docs/${docId}/review`, {
+      const res = await fetch(`${API_BASE_URL}/api/v1/admin/verification-docs/${docId}/review`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -123,7 +124,7 @@ export default function AdminDashboardPage() {
 
   const handleUpdateTicketStatus = async (ticketId: string, status: string) => {
     try {
-      const res = await fetch(`http://localhost:4000/api/v1/support/tickets/${ticketId}/status`, {
+      const res = await fetch(`${API_BASE_URL}/api/v1/support/tickets/${ticketId}/status`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -145,7 +146,7 @@ export default function AdminDashboardPage() {
 
     setSubmittingReply(true);
     try {
-      const res = await fetch(`http://localhost:4000/api/v1/support/tickets/${selectedTicket.id}/messages`, {
+      const res = await fetch(`${API_BASE_URL}/api/v1/support/tickets/${selectedTicket.id}/messages`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -166,7 +167,7 @@ export default function AdminDashboardPage() {
 
   const handleProcessPayout = async (payoutId: string, status: 'PAID' | 'FAILED') => {
     try {
-      const res = await fetch(`http://localhost:4000/api/v1/payouts/${payoutId}/process`, {
+      const res = await fetch(`${API_BASE_URL}/api/v1/payouts/${payoutId}/process`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -185,7 +186,7 @@ export default function AdminDashboardPage() {
   const handleCreateCoupon = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res = await fetch('http://localhost:4000/api/v1/coupons', {
+      const res = await fetch(`${API_BASE_URL}/api/v1/coupons`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

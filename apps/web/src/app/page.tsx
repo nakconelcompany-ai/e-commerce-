@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ProductCard } from '@/components/ProductCard';
+import { API_BASE_URL } from '@/lib/config';
 import {
   Flame,
   ArrowRight,
@@ -66,7 +67,7 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch('http://localhost:4000/api/v1/products')
+    fetch(`${API_BASE_URL}/api/v1/products`)
       .then((res) => res.json())
       .then((data) => {
         if (data && data.items && data.items.length > 0) {

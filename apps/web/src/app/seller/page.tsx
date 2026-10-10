@@ -22,6 +22,7 @@ import {
   MapPin,
   Calendar,
 } from 'lucide-react';
+import { API_BASE_URL } from '@/lib/config';
 
 export default function SellerPortalPage() {
   const { user, token } = useAuth();
@@ -80,11 +81,11 @@ export default function SellerPortalPage() {
 
     setLoading(true);
     Promise.all([
-      fetch('http://localhost:4000/api/v1/seller/profile', { headers: { Authorization: `Bearer ${token}` } }),
-      fetch('http://localhost:4000/api/v1/seller/overview', { headers: { Authorization: `Bearer ${token}` } }),
-      fetch('http://localhost:4000/api/v1/orders/seller-orders', { headers: { Authorization: `Bearer ${token}` } }),
-      fetch('http://localhost:4000/api/v1/payouts/my-payouts', { headers: { Authorization: `Bearer ${token}` } }),
-      fetch('http://localhost:4000/api/v1/seller/verification-docs', { headers: { Authorization: `Bearer ${token}` } }),
+      fetch(`${API_BASE_URL}/api/v1/seller/profile`, { headers: { Authorization: `Bearer ${token}` } }),
+      fetch(`${API_BASE_URL}/api/v1/seller/overview`, { headers: { Authorization: `Bearer ${token}` } }),
+      fetch(`${API_BASE_URL}/api/v1/orders/seller-orders`, { headers: { Authorization: `Bearer ${token}` } }),
+      fetch(`${API_BASE_URL}/api/v1/payouts/my-payouts`, { headers: { Authorization: `Bearer ${token}` } }),
+      fetch(`${API_BASE_URL}/api/v1/seller/verification-docs`, { headers: { Authorization: `Bearer ${token}` } }),
     ])
       .then(async ([pRes, oRes, sRes, payRes, docRes]) => {
         if (pRes.ok) setProfile(await pRes.json());
@@ -105,7 +106,7 @@ export default function SellerPortalPage() {
     e.preventDefault();
     setSubmittingApp(true);
     try {
-      const res = await fetch('http://localhost:4000/api/v1/seller/apply', {
+      const res = await fetch(`${API_BASE_URL}/api/v1/seller/apply`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -143,7 +144,7 @@ export default function SellerPortalPage() {
 
     setSubmittingDoc(true);
     try {
-      const res = await fetch('http://localhost:4000/api/v1/seller/verification-docs', {
+      const res = await fetch(`${API_BASE_URL}/api/v1/seller/verification-docs`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -170,7 +171,7 @@ export default function SellerPortalPage() {
     setCreatingProduct(true);
     try {
       const basePriceMinor = Math.round(prodPriceNaira * 100);
-      const res = await fetch('http://localhost:4000/api/v1/products', {
+      const res = await fetch(`${API_BASE_URL}/api/v1/products`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -215,7 +216,7 @@ export default function SellerPortalPage() {
     setSubmittingPayout(true);
     try {
       const amountMinor = Math.round(payoutAmountNaira * 100);
-      const res = await fetch('http://localhost:4000/api/v1/payouts/request', {
+      const res = await fetch(`${API_BASE_URL}/api/v1/payouts/request`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -239,7 +240,7 @@ export default function SellerPortalPage() {
 
   const handleUpdateStatus = async (sellerOrderId: string, nextStatus: string) => {
     try {
-      const res = await fetch(`http://localhost:4000/api/v1/orders/seller-orders/${sellerOrderId}/status`, {
+      const res = await fetch(`${API_BASE_URL}/api/v1/orders/seller-orders/${sellerOrderId}/status`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -269,7 +270,7 @@ export default function SellerPortalPage() {
     if (!dispatchOrder) return;
     setSubmittingDispatch(true);
     try {
-      const res = await fetch(`http://localhost:4000/api/v1/orders/seller-orders/${dispatchOrder.id}/status`, {
+      const res = await fetch(`${API_BASE_URL}/api/v1/orders/seller-orders/${dispatchOrder.id}/status`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
