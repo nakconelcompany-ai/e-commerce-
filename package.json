@@ -1,0 +1,18 @@
+{
+  "name": "nuvora",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Nuvora multi-vendor marketplace (modular monolith: Next.js web + NestJS API + PostgreSQL)",
+  "workspaces": ["apps/*", "packages/*"],
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "build:shared": "npm run build -w @nuvora/shared",
+    "build": "npm run build:shared && npm run build -w @nuvora/api && npm run build -w @nuvora/web",
+    "test": "npm run build:shared && npm run test -w @nuvora/shared && npm run test -w @nuvora/api",
+    "db:generate": "npm run db:generate -w @nuvora/api",
+    "db:migrate": "npm run db:migrate -w @nuvora/api",
+    "db:seed": "npm run db:seed -w @nuvora/api",
+    "dev:api": "npm run start:dev -w @nuvora/api",
+    "dev:web": "npm run dev -w @nuvora/web"
+  }
+}
