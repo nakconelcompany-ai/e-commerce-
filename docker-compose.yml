@@ -1,0 +1,71 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: nuvora_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: nuvora_user
+      POSTGRES_PASSWORD: nuvora_secure_password_2026
+      POSTGRES_DB: nuvora
+    ports:
+      - '5432:5432'
+    volumes:
+      - nuvora_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nuvora_user -d nuvora"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - nuvora_network
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    container_name: nuvora_api
+    restart: always
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: "postgresql://nuvora_user:nuvora_secure_password_2026@postgres:5432/nuvora?schema=public"
+      PORT: 4000
+      NODE_ENV: production
+      APP_SECRET: "nuvora-jwt-marketplace-production-secret-2026"
+      JWT_EXPIRES_IN: "7d"
+      PAYSTACK_SECRET_KEY: "${PAYSTACK_SECRET_KEY:-sk_test_placeholder}"
+      PAYSTACK_PUBLIC_KEY: "${PAYSTACK_PUBLIC_KEY:-pk_test_placeholder}"
+      PAYSTACK_WEBHOOK_SECRET: "${PAYSTACK_WEBHOOK_SECRET:-whsec_placeholder}"
+      DEFAULT_COMMISSION_BPS: 500
+      SELLER_ONBOARDING_MODE: "approval"
+    ports:
+      - '4000:4000'
+    networks:
+      - nuvora_network
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+    container_name: nuvora_web
+    restart: always
+    depends_on:
+      - api
+    environment:
+      PORT: 3000
+      NODE_ENV: production
+      NEXT_PUBLIC_API_URL: "http://localhost:4000/api/v1"
+    ports:
+      - '3000:3000'
+    networks:
+      - nuvora_network
+
+networks:
+  nuvora_network:
+    driver: bridge
+
+volumes:
+  nuvora_pgdata:

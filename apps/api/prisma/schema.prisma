@@ -1,0 +1,536 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  CUSTOMER
+  SELLER
+  STAFF
+  SUPER_ADMIN
+}
+
+enum SellerStatus {
+  DRAFT
+  SUBMITTED
+  PENDING_VERIFICATION
+  APPROVED
+  REJECTED
+  SUSPENDED
+  DEACTIVATED
+}
+
+enum ProductStatus {
+  DRAFT
+  PENDING_MODERATION
+  PUBLISHED
+  REJECTED
+  ARCHIVED
+}
+
+enum VerificationDocStatus {
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
+enum OrderStatus {
+  pending_payment
+  payment_failed
+  expired
+  paid
+  processing
+  partially_delivered
+  delivered
+  partially_cancelled
+  cancelled
+  completed
+}
+
+enum SellerOrderStatus {
+  pending_payment
+  awaiting_processing
+  processing
+  ready_for_dispatch
+  dispatched
+  delivered
+  delivery_failed
+  returned
+  cancelled
+  completed
+}
+
+enum ShipmentStatus {
+  awaiting_processing
+  preparing
+  dispatched
+  in_transit
+  out_for_delivery
+  delivered
+  delivery_failed
+  returned
+}
+
+enum PaymentStatus {
+  initialized
+  pending
+  success
+  failed
+  abandoned
+  partially_refunded
+  refunded
+}
+
+enum LedgerEntryType {
+  SALE_EARNING
+  COMMISSION_DEDUCTION
+  REFUND_REVERSAL
+  PAYOUT
+}
+
+enum TicketPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum TicketStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+enum PayoutStatus {
+  PENDING
+  PROCESSING
+  PAID
+  FAILED
+  REVERSED
+}
+
+model User {
+  id                 String   @id @default(uuid())
+  email              String   @unique
+  passwordHash       String
+  phone              String?  @unique
+  role               Role     @default(CUSTOMER)
+  isEmailVerified    Boolean  @default(false)
+  emailVerifyToken   String?
+  emailVerifyExpires DateTime?
+  isPhoneVerified    Boolean  @default(false)
+  avatarUrl          String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  addresses          Address[]
+  sellerProfile      SellerProfile?
+  cartItems          CartItem[]
+  orders             Order[]
+  reviews            Review[]
+  returnRequests     ReturnRequest[]
+  supportTickets     SupportTicket[]
+  notifications      Notification[]
+}
+
+model Address {
+  id             String   @id @default(uuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fullName       String
+  phone          String
+  state          String
+  city           String
+  streetAddress  String
+  isDefault      Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model SellerProfile {
+  id                String       @id @default(uuid())
+  userId            String       @unique
+  user              User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  businessName      String
+  storeSlug         String       @unique
+  storeName         String
+  storeLogo         String?
+  storeBanner       String?
+  description       String?
+  onboardingStatus  SellerStatus @default(DRAFT)
+  rejectionReason   String?
+  contactEmail      String
+  contactPhone      String
+  businessAddress   String
+  state             String
+  city              String
+  bankAccountName   String?
+  bankAccountNumber String?
+  bankCode          String?
+  bankName          String?
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+
+  products          Product[]
+  sellerOrders      SellerOrder[]
+  ledgerEntries     SellerLedgerEntry[]
+  verificationDocs  SellerVerificationDoc[]
+  payoutRequests    PayoutRequest[]
+}
+
+model SellerVerificationDoc {
+  id                 String                @id @default(uuid())
+  sellerId           String
+  seller             SellerProfile         @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  docType            String
+  docUrl             String
+  verificationStatus VerificationDocStatus @default(PENDING)
+  createdAt          DateTime              @default(now())
+}
+
+model Category {
+  id           String     @id @default(uuid())
+  name         String
+  slug         String     @unique
+  description  String?
+  imageUrl     String?
+  parentId     String?
+  parent       Category?  @relation("SubCategories", fields: [parentId], references: [id])
+  children     Category[] @relation("SubCategories")
+  displayOrder Int        @default(0)
+  isActive     Boolean    @default(true)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  products     Product[]
+}
+
+model Brand {
+  id        String    @id @default(uuid())
+  name      String
+  slug      String    @unique
+  logoUrl   String?
+  isActive  Boolean   @default(true)
+  createdAt DateTime  @default(now())
+
+  products  Product[]
+}
+
+model Product {
+  id                 String        @id @default(uuid())
+  sellerId           String
+  seller             SellerProfile @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  title              String
+  slug               String        @unique
+  description        String
+  categoryId         String
+  category           Category      @relation(fields: [categoryId], references: [id])
+  brandId            String?
+  brand              Brand?        @relation(fields: [brandId], references: [id])
+  status             ProductStatus @default(DRAFT)
+  rejectionReason    String?
+  isPlatformOwned    Boolean       @default(false)
+  basePriceMinor     Int
+  compareAtPriceMinor Int?
+  sku                String        @unique
+  images             Json          @default("[]")
+  specifications     Json          @default("{}")
+  ratingAverage      Float         @default(0)
+  reviewCount        Int           @default(0)
+  totalSales         Int           @default(0)
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+
+  variants           ProductVariant[]
+  reviews            Review[]
+}
+
+model ProductVariant {
+  id                 String   @id @default(uuid())
+  productId          String
+  product            Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  title              String
+  sku                String   @unique
+  priceMinor         Int
+  compareAtPriceMinor Int?
+  stockQuantity      Int      @default(0)
+  attributes         Json     @default("{}")
+  isDefault          Boolean  @default(false)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  cartItems          CartItem[]
+  orderItems         OrderItem[]
+  stockReservations  StockReservation[]
+}
+
+model StockReservation {
+  id         String   @id @default(uuid())
+  variantId  String
+  variant    ProductVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  customerId String
+  quantity   Int
+  expiresAt  DateTime
+  status     String   @default("RESERVED")
+  createdAt  DateTime @default(now())
+}
+
+model CartItem {
+  id         String         @id @default(uuid())
+  customerId String
+  customer   User           @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  variantId  String
+  variant    ProductVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  quantity   Int
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+
+  @@unique([customerId, variantId])
+}
+
+model Order {
+  id               String      @id @default(uuid())
+  orderNumber      String      @unique
+  customerId       String
+  customer         User        @relation(fields: [customerId], references: [id])
+  status           OrderStatus @default(pending_payment)
+  totalAmountMinor Int
+  subtotalMinor    Int
+  deliveryFeeMinor Int
+  discountMinor    Int         @default(0)
+  currency         String      @default("NGN")
+  deliveryAddress  Json
+  paymentMethod    String      @default("paystack")
+  paymentReference String?     @unique
+  paidAt           DateTime?
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+
+  sellerOrders     SellerOrder[]
+  payments         Payment[]
+  returnRequests   ReturnRequest[]
+  supportTickets   SupportTicket[]
+}
+
+model SellerOrder {
+  id                    String            @id @default(uuid())
+  orderNumber           String            @unique
+  parentOrderId         String
+  parentOrder           Order             @relation(fields: [parentOrderId], references: [id], onDelete: Cascade)
+  sellerId              String
+  seller                SellerProfile     @relation(fields: [sellerId], references: [id])
+  status                SellerOrderStatus @default(pending_payment)
+  subtotalMinor         Int
+  deliveryFeeMinor      Int
+  discountMinor         Int               @default(0)
+  totalAmountMinor      Int
+  commissionAmountMinor Int               @default(0)
+  sellerEarningMinor    Int               @default(0)
+  trackingNumber        String?
+  carrierName           String?
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
+
+  items                 OrderItem[]
+  shipments             Shipment[]
+  ledgerEntries         SellerLedgerEntry[]
+  returnRequests        ReturnRequest[]
+}
+
+model OrderItem {
+  id                          String         @id @default(uuid())
+  sellerOrderId               String
+  sellerOrder                 SellerOrder    @relation(fields: [sellerOrderId], references: [id], onDelete: Cascade)
+  parentOrderId               String
+  productId                   String
+  variantId                   String
+  variant                     ProductVariant @relation(fields: [variantId], references: [id])
+  productTitle                String
+  variantTitle                String
+  sku                         String
+  unitPriceMinor              Int
+  quantity                    Int
+  sellerFundedDiscountMinor   Int            @default(0)
+  platformFundedDiscountMinor Int            @default(0)
+  grossMinor                  Int
+  commissionBaseMinor         Int
+  commissionMinor             Int
+  sellerEarningMinor          Int
+  createdAt                   DateTime       @default(now())
+}
+
+model Shipment {
+  id                    String         @id @default(uuid())
+  sellerOrderId         String
+  sellerOrder           SellerOrder    @relation(fields: [sellerOrderId], references: [id], onDelete: Cascade)
+  trackingNumber        String?
+  carrier               String?
+  status                ShipmentStatus @default(awaiting_processing)
+  dispatchNotes         String?
+  estimatedDeliveryDate DateTime?
+  deliveredAt           DateTime?
+  createdAt             DateTime       @default(now())
+  updatedAt             DateTime       @updatedAt
+}
+
+model Payment {
+  id               String        @id @default(uuid())
+  orderId          String
+  order            Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  reference        String        @unique
+  provider         String        @default("paystack")
+  amountMinor      Int
+  currency         String        @default("NGN")
+  status           PaymentStatus @default(initialized)
+  authorizationUrl String?
+  rawResponse      Json?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  events           PaymentEvent[]
+}
+
+model PaymentEvent {
+  id                String   @id @default(uuid())
+  paymentId         String
+  payment           Payment  @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  eventType         String
+  providerReference String?
+  payload           Json
+  createdAt         DateTime @default(now())
+}
+
+model CommissionRule {
+  id            String    @id @default(uuid())
+  scope         String    // global, category, seller
+  sellerId      String?
+  categoryId    String?
+  rateBps       Int       @default(500) // 5%
+  effectiveFrom DateTime  @default(now())
+  effectiveTo   DateTime?
+  active        Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+}
+
+model SellerLedgerEntry {
+  id                String          @id @default(uuid())
+  sellerId          String
+  seller            SellerProfile   @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  sellerOrderId     String?
+  sellerOrder       SellerOrder?    @relation(fields: [sellerOrderId], references: [id])
+  entryType         LedgerEntryType
+  amountMinor       Int
+  balanceAfterMinor Int
+  reference         String
+  description       String
+  createdAt         DateTime        @default(now())
+}
+
+model MarketplaceSetting {
+  id          String   @id @default(uuid())
+  key         String   @unique
+  value       Json
+  description String?
+  updatedAt   DateTime @updatedAt
+}
+
+model Review {
+  id               String   @id @default(uuid())
+  productId        String
+  product          Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  customerId       String
+  customer         User     @relation(fields: [customerId], references: [id])
+  rating           Int
+  title            String
+  comment          String
+  verifiedPurchase Boolean  @default(true)
+  createdAt        DateTime @default(now())
+}
+
+model ReturnRequest {
+  id               String      @id @default(uuid())
+  orderId          String
+  order            Order       @relation(fields: [orderId], references: [id])
+  sellerOrderId    String
+  sellerOrder      SellerOrder @relation(fields: [sellerOrderId], references: [id])
+  customerId       String
+  customer         User        @relation(fields: [customerId], references: [id])
+  reason           String
+  details          String
+  status           String      @default("PENDING") // PENDING, APPROVED, REJECTED, COMPLETED
+  refundAmountMinor Int
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+}
+
+model Coupon {
+  id               String    @id @default(uuid())
+  code             String    @unique
+  discountType     String    @default("PERCENTAGE") // PERCENTAGE or FIXED
+  discountValue    Int       // bps for percentage, minor for fixed
+  minPurchaseMinor Int       @default(0)
+  maxDiscountMinor Int?
+  usageLimit       Int?
+  timesUsed        Int       @default(0)
+  expiresAt        DateTime?
+  isActive         Boolean   @default(true)
+  createdAt        DateTime  @default(now())
+}
+
+model SupportTicket {
+  id           String         @id @default(uuid())
+  ticketNumber String         @unique
+  customerId   String
+  customer     User           @relation(fields: [customerId], references: [id])
+  orderId      String?
+  order        Order?         @relation(fields: [orderId], references: [id])
+  subject      String
+  category     String
+  priority     TicketPriority @default(MEDIUM)
+  status       TicketStatus   @default(OPEN)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  messages     SupportMessage[]
+}
+
+model SupportMessage {
+  id         String        @id @default(uuid())
+  ticketId   String
+  ticket     SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  senderId   String
+  senderRole String
+  message    String
+  createdAt  DateTime      @default(now())
+}
+
+model PayoutRequest {
+  id                String       @id @default(uuid())
+  sellerId          String
+  seller            SellerProfile @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  amountMinor       Int
+  status            PayoutStatus @default(PENDING)
+  bankAccountName   String
+  bankAccountNumber String
+  bankName          String
+  reference         String       @unique
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  message   String
+  type      String   @default("INFO") // INFO, ORDER, PAYMENT, SHIPMENT, SELLER, SUPPORT
+  link      String?
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+}

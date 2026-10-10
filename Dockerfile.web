@@ -1,0 +1,39 @@
+# Multi-stage Dockerfile for @nuvora/web (Next.js 14 App Router)
+FROM node:20-alpine AS builder
+
+WORKDIR /app
+
+COPY package*.json tsconfig.base.json ./
+COPY packages/shared/package*.json ./packages/shared/
+COPY apps/web/package*.json ./apps/web/
+
+RUN npm ci
+
+COPY packages/shared/ ./packages/shared/
+RUN npm run build:shared
+
+COPY apps/web/ ./apps/web/
+ENV NEXT_TELEMETRY_DISABLED=1
+RUN npm run build -w @nuvora/web
+
+# Production Runner stage
+FROM node:20-alpine AS runner
+
+WORKDIR /app
+ENV NODE_ENV=production
+ENV PORT=3000
+ENV NEXT_TELEMETRY_DISABLED=1
+
+COPY package*.json ./
+COPY packages/shared/package*.json ./packages/shared/
+COPY apps/web/package*.json ./apps/web/
+
+RUN npm ci --omit=dev
+
+COPY --from=builder /app/packages/shared/dist ./packages/shared/dist
+COPY --from=builder /app/apps/web/public ./apps/web/public
+COPY --from=builder /app/apps/web/.next ./apps/web/.next
+
+EXPOSE 3000
+
+CMD ["npm", "run", "start", "-w", "@nuvora/web"]
