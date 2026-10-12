@@ -3,9 +3,10 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Search, ShoppingBag, LifeBuoy, User, Store } from 'lucide-react';
+import { Home, Search, LifeBuoy, User, Store } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
+import { CartIcon } from '@/components/CartIcon';
 
 export const MobileBottomNav = () => {
   const pathname = usePathname();
@@ -15,7 +16,7 @@ export const MobileBottomNav = () => {
   const navItems = [
     { label: 'Home', href: '/', icon: Home },
     { label: 'Catalog', href: '/products', icon: Search },
-    { label: 'Cart', href: '/cart', icon: ShoppingBag, badge: totalItems },
+    { label: 'Cart', href: '/cart', isCart: true, badge: totalItems },
     { label: 'Support', href: '/support', icon: LifeBuoy },
     {
       label: user?.role === 'SELLER' ? 'Seller' : 'Account',
@@ -25,7 +26,7 @@ export const MobileBottomNav = () => {
   ];
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-40 md:hidden bg-dark-900/95 backdrop-blur-lg border-t border-gray-800/80 px-2 py-1 shadow-2xl safe-area-bottom">
+    <div className="fixed bottom-0 left-0 right-0 z-40 md:hidden bg-emerald-950/95 backdrop-blur-lg border-t border-emerald-900 px-2 py-1 shadow-2xl safe-area-bottom">
       <div className="flex items-center justify-around h-14">
         {navItems.map((item) => {
           const Icon = item.icon;
@@ -36,13 +37,19 @@ export const MobileBottomNav = () => {
               key={item.href}
               href={item.href}
               className={`relative flex flex-col items-center justify-center w-full py-1 text-[11px] font-bold transition-all ${
-                isActive ? 'text-amber-400' : 'text-gray-400 hover:text-gray-200'
+                isActive ? 'text-amber-400' : 'text-emerald-200/70 hover:text-white'
               }`}
             >
               <div className="relative">
-                <Icon className={`w-5 h-5 transition-transform ${isActive ? 'scale-110' : ''}`} />
+                {item.isCart ? (
+                  <div className={`w-5 h-5 transition-transform ${isActive ? 'scale-110' : ''}`}>
+                    <CartIcon className="w-5 h-5" />
+                  </div>
+                ) : (
+                  Icon && <Icon className={`w-5 h-5 transition-transform ${isActive ? 'scale-110' : ''}`} />
+                )}
                 {item.badge !== undefined && item.badge > 0 && (
-                  <span className="absolute -top-1.5 -right-2 bg-brand-500 text-dark-900 font-black text-[9px] w-4 h-4 rounded-full flex items-center justify-center border-2 border-dark-900">
+                  <span className="absolute -top-1.5 -right-2 bg-amber-400 text-emerald-950 font-black text-[9px] w-4 h-4 rounded-full flex items-center justify-center border-2 border-emerald-950">
                     {item.badge}
                   </span>
                 )}

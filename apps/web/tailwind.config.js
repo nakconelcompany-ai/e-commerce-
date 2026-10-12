@@ -9,23 +9,29 @@ module.exports = {
     extend: {
       colors: {
         brand: {
-          50: '#fffbeb',
-          100: '#fef3c7',
-          200: '#fde68a',
-          300: '#fcd34d',
-          400: '#fbbf24',
-          500: '#d97706', // Primary Golden Amber
-          600: '#b45309',
-          700: '#92400e',
-          800: '#78350f',
-          900: '#451a03',
-          gold: '#D4AF37',
+          50: '#ecfdf5',
+          100: '#d1fae5',
+          200: '#a7f3d0',
+          300: '#6ee7b7',
+          400: '#34d399',
+          500: '#10b981', // Vibrant Emerald
+          600: '#059669', // Rich Emerald Green
+          700: '#047857',
+          800: '#065f46',
+          900: '#064e3b',
+          gold: '#f59e0b',
+        },
+        accent: {
+          yellow: '#f59e0b',
+          gold: '#eab308',
+          amber: '#fbbf24',
+          light: '#fef08a',
         },
         dark: {
-          900: '#0B0F17',
-          800: '#111827',
-          700: '#1F2937',
-          600: '#374151',
+          900: '#06261d', // Luxurious deep emerald dark
+          800: '#0c352a',
+          700: '#134e3e',
+          600: '#1b6753',
         }
       },
     },
